@@ -1,26 +1,16 @@
-const getProducts = (req, res) => {
-    const products = [
-        {
-            id: 1,
-            name: "Wireless Headphones",
-            price: 1999,
-            category: "Electronics"
-        },
-        {
-            id: 2,
-            name: "Smart Watch",
-            price: 2499,
-            category: "Electronics"
-        },
-        {
-            id: 3,
-            name: "Running Shoes",
-            price: 2999,
-            category: "Fashion"
-        }
-    ];
+const db = require("../config/db");
 
-    res.json(products);
+const getProducts = async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM products");
+
+        res.json(rows);
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({
+            message: "Failed to fetch products"
+        });
+    }
 };
 
 module.exports = {
