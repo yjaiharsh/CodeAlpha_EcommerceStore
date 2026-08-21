@@ -1,4 +1,6 @@
 
+const bcrypt = require("bcrypt");
+
 const {
     createUser,
     findUserByEmail
@@ -33,12 +35,18 @@ async function registerUser(req, res) {
 
         }
 
-        const userId =
-            await createUser(
-                name,
-                email,
-                password
-            );
+
+const hashedPassword =
+    await bcrypt.hash(password, 10);
+
+const userId =
+    await createUser(
+        name,
+        email,
+        hashedPassword
+    );
+
+
 
         res.status(201).json({
             message: "User registered successfully",
@@ -85,11 +93,20 @@ async function loginUser(req, res) {
 
         }
 
-        if (user.password !== password) {
+const passwordMatch =
+    await bcrypt.compare(
+        password,
+        user.password
+    );
 
-            return res.status(401).json({
-                message: "Invalid email or password"
-            });
+if (!passwordMatch) {
+
+    return res.status(401).json({
+        message: "Invalid email or password"
+    });
+
+
+
 
         }
 
