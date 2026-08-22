@@ -1,4 +1,6 @@
+
 const db = require("../config/db");
+
 
 async function createOrder(orderData) {
 
@@ -35,7 +37,8 @@ async function createOrder(orderData) {
         for (const item of items) {
 
             const subtotal =
-                Number(item.price) * Number(item.quantity);
+                Number(item.price) *
+                Number(item.quantity);
 
             await connection.query(
                 `INSERT INTO order_items
@@ -68,8 +71,35 @@ async function createOrder(orderData) {
         connection.release();
 
     }
+
 }
 
+
+async function getOrdersByEmail(email) {
+
+    const [orders] = await db.query(
+        `SELECT
+            id,
+            customer_name,
+            email,
+            phone,
+            address,
+            total_amount,
+            status,
+            created_at
+         FROM orders
+         WHERE email = ?
+         ORDER BY created_at DESC`,
+        [email]
+    );
+
+    return orders;
+
+}
+
+
 module.exports = {
-    createOrder
+    createOrder,
+    getOrdersByEmail
 };
+
