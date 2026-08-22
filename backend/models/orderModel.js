@@ -79,22 +79,28 @@ async function getOrdersByEmail(email) {
 
     const [orders] = await db.query(
         `SELECT
-            id,
-            customer_name,
-            email,
-            phone,
-            address,
-            total_amount,
-            status,
-            created_at
-         FROM orders
-         WHERE email = ?
-         ORDER BY created_at DESC`,
+            o.id,
+            o.customer_name,
+            o.email,
+            o.phone,
+            o.address,
+            o.total_amount,
+            o.status,
+            o.created_at,
+            oi.product_id,
+            oi.product_name,
+            oi.price,
+            oi.quantity,
+            oi.subtotal
+         FROM orders o
+         LEFT JOIN order_items oi
+         ON o.id = oi.order_id
+         WHERE o.email = ?
+         ORDER BY o.created_at DESC, oi.id ASC`,
         [email]
     );
 
     return orders;
-
 }
 
 

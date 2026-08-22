@@ -261,6 +261,40 @@
 
         }
 
+.order-products {
+
+    margin-top: 15px;
+
+}
+
+
+.order-product {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 12px;
+
+    margin-bottom: 10px;
+
+    background-color: #f8f8f8;
+
+    border-radius: 6px;
+
+}
+
+
+.order-product strong {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+}
+
 
         @media (max-width: 600px) {
 
@@ -343,229 +377,357 @@
     </main>
 
 
-    <script>
+<script>
+
+    function logout() {
+
+        localStorage.removeItem("user");
+
+        localStorage.removeItem("cart");
+
+        window.location.href =
+            "login.html";
+
+    }
 
 
-        function logout() {
+    async function loadOrders() {
 
-            localStorage.removeItem("user");
+        const user =
+            JSON.parse(
+                localStorage.getItem("user")
+            );
 
-            localStorage.removeItem("cart");
+
+        if (!user) {
+
+            alert(
+                "Please login to view your orders."
+            );
 
             window.location.href =
                 "login.html";
 
+            return;
+
         }
 
 
-        async function loadOrders() {
+        const container =
+            document.getElementById(
+                "orders-container"
+            );
 
-            const user =
-                JSON.parse(
-                    localStorage.getItem("user")
+
+        try {
+
+            const response =
+                await fetch(
+                    `http://localhost:5000/api/orders?email=${encodeURIComponent(user.email)}`
                 );
 
 
-            if (!user) {
+            const data =
+                await response.json();
 
-                alert(
-                    "Please login to view your orders."
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message ||
+                    "Failed to load orders."
                 );
 
-                window.location.href =
-                    "login.html";
+            }
+
+
+            if (
+                !data.orders ||
+                data.orders.length === 0
+            ) {
+
+                container.innerHTML = `
+
+                    <div class="message">
+
+                        <p>
+                            You haven't placed
+                            any orders yet.
+                        </p>
+
+                        <a href="products.html">
+                            Browse Products
+                        </a>
+
+                    </div>
+
+                `;
 
                 return;
 
             }
 
 
-            const container =
-                document.getElementById(
-                    "orders-container"
-                );
+            /*
+             * The API returns one row for each
+             * product inside an order.
+             *
+             * We group those rows by order ID.
+             */
+
+            const groupedOrders = {};
 
 
-            try {
+            data.orders.forEach(order => {
 
-                const response =
-                    await fetch(
-                        `http://localhost:5000/api/orders?email=${encodeURIComponent(user.email)}`
-                    );
+                if (!groupedOrders[order.id]) {
 
+                    groupedOrders[order.id] = {
 
-                const data =
-                    await response.json();
+                        id:
+                            order.id,
 
+                        customer_name:
+                            order.customer_name,
 
-                if (!response.ok) {
+                        email:
+                            order.email,
 
-                    throw new Error(
-                        data.message ||
-                        "Failed to load orders."
-                    );
+                        phone:
+                            order.phone,
 
-                }
+                        address:
+                            order.address,
 
+                        total_amount:
+                            order.total_amount,
 
-                if (
-                    !data.orders ||
-                    data.orders.length === 0
-                ) {
+                        status:
+                            order.status,
 
-                    container.innerHTML = `
+                        created_at:
+                            order.created_at,
 
-                        <div class="message">
+                        items: []
 
-                            <p>
-                                You haven't placed
-                                any orders yet.
-                            </p>
-
-                            <a href="products.html">
-                                Browse Products
-                            </a>
-
-                        </div>
-
-                    `;
-
-                    return;
+                    };
 
                 }
 
 
-                container.innerHTML = "";
+                if (order.product_id) {
+
+                    groupedOrders[
+                        order.id
+                    ].items.push({
+
+                        product_id:
+                            order.product_id,
+
+                        product_name:
+                            order.product_name,
+
+                        price:
+                            order.price,
+
+                        quantity:
+                            order.quantity,
+
+                        subtotal:
+                            order.subtotal
+
+                    });
+
+                }
+
+            });
 
 
-                data.orders.forEach(order => {
-
-                    const card =
-                        document.createElement("div");
-
-                    card.className =
-                        "order-card";
+            container.innerHTML = "";
 
 
-                    const date =
-                        new Date(
-                            order.created_at
-                        ).toLocaleString();
+            Object.values(
+                groupedOrders
+            ).forEach(order => {
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "order-card";
 
 
-                    card.innerHTML = `
-
-                        <div class="order-header">
-
-                            <div class="order-id">
-                                Order #${order.id}
-                            </div>
-
-                            <div class="status">
-                                ${order.status}
-                            </div>
-
-                        </div>
+                const date =
+                    new Date(
+                        order.created_at
+                    ).toLocaleString();
 
 
-                        <div class="order-details">
-
-                            <div class="detail">
-
-                                <strong>
-                                    Customer
-                                </strong>
-
-                                ${order.customer_name}
-
-                            </div>
+                let itemsHTML = "";
 
 
-                            <div class="detail">
+                order.items.forEach(item => {
 
-                                <strong>
-                                    Date
-                                </strong>
+                    itemsHTML += `
 
-                                ${date}
+                        <div class="order-product">
 
-                            </div>
-
-
-                            <div class="detail">
-
-                                <strong>
-                                    Phone
-                                </strong>
-
-                                ${order.phone}
-
-                            </div>
-
-
-                            <div class="detail">
+                            <div>
 
                                 <strong>
-                                    Address
+                                    ${item.product_name}
                                 </strong>
 
-                                ${order.address}
+                                <div>
+                                    Quantity:
+                                    ${item.quantity}
+                                </div>
 
                             </div>
 
-                        </div>
 
+                            <div>
 
-                        <div class="total">
+                                ₹${Number(
+                                    item.subtotal
+                                ).toFixed(2)}
 
-                            Total:
-                            ₹${Number(
-                                order.total_amount
-                            ).toFixed(2)}
+                            </div>
 
                         </div>
 
                     `;
-
-
-                    container.appendChild(card);
 
                 });
 
 
-            } catch (error) {
+                card.innerHTML = `
 
-                console.error(
-                    "Orders error:",
-                    error
-                );
+                    <div class="order-header">
+
+                        <div class="order-id">
+                            Order #${order.id}
+                        </div>
+
+                        <div class="status">
+                            ${order.status}
+                        </div>
+
+                    </div>
 
 
-                container.innerHTML = `
+                    <div class="order-details">
 
-                    <div class="message error">
+                        <div class="detail">
 
-                        <p>
-                            Failed to load your orders.
-                        </p>
+                            <strong>
+                                Customer
+                            </strong>
 
-                        <p>
-                            Please make sure the
-                            backend server is running.
-                        </p>
+                            ${order.customer_name}
+
+                        </div>
+
+
+                        <div class="detail">
+
+                            <strong>
+                                Date
+                            </strong>
+
+                            ${date}
+
+                        </div>
+
+
+                        <div class="detail">
+
+                            <strong>
+                                Phone
+                            </strong>
+
+                            ${order.phone}
+
+                        </div>
+
+
+                        <div class="detail">
+
+                            <strong>
+                                Address
+                            </strong>
+
+                            ${order.address}
+
+                        </div>
+
+                    </div>
+
+
+                    <h3>
+                        Products
+                    </h3>
+
+
+                    <div class="order-products">
+
+                        ${itemsHTML}
+
+                    </div>
+
+
+                    <div class="total">
+
+                        Total:
+                        ₹${Number(
+                            order.total_amount
+                        ).toFixed(2)}
 
                     </div>
 
                 `;
 
-            }
+
+                container.appendChild(card);
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Orders error:",
+                error
+            );
+
+
+            container.innerHTML = `
+
+                <div class="message error">
+
+                    <p>
+                        Failed to load your orders.
+                    </p>
+
+                    <p>
+                        Please make sure the
+                        backend server is running.
+                    </p>
+
+                </div>
+
+            `;
 
         }
 
+    }
 
-        loadOrders();
 
-    </script>
+    loadOrders();
+
+</script>
+
+
 
 
 </body>
