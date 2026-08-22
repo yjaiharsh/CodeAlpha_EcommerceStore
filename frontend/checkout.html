@@ -242,191 +242,262 @@
     </main>
 
 
-    <script>
-        
-        const user =
-    JSON.parse(
-        localStorage.getItem("user")
-    );
 
-if (!user) {
+<script>
 
-    alert("Please login before checkout.");
+    function getCart() {
 
-    window.location.href =
-        "login.html";
+        return JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
 
-}
+    }
 
-        function getCart() {
 
-            return JSON.parse(
-                localStorage.getItem("cart")
-            ) || [];
+    function displayOrderSummary() {
 
+        const cart = getCart();
+
+        const summary =
+            document.getElementById("order-summary");
+
+        const totalElement =
+            document.getElementById("order-total");
+
+        summary.innerHTML = "";
+
+        let total = 0;
+
+
+        if (cart.length === 0) {
+
+            summary.innerHTML =
+                "<p>Your cart is empty.</p>";
+
+            totalElement.innerText =
+                "Total: ₹0.00";
+
+            return;
         }
 
 
-        function displayOrderSummary() {
+        cart.forEach(product => {
+
+            const itemTotal =
+                Number(product.price) *
+                product.quantity;
+
+            total += itemTotal;
+
+
+            const item =
+                document.createElement("div");
+
+            item.className = "order-item";
+
+            item.innerHTML = `
+
+                <div>
+
+                    <div class="order-item-name">
+                        ${product.name}
+                    </div>
+
+                    <div>
+                        Quantity: ${product.quantity}
+                    </div>
+
+                </div>
+
+                <div>
+                    ₹${itemTotal.toFixed(2)}
+                </div>
+
+            `;
+
+            summary.appendChild(item);
+
+        });
+
+
+        totalElement.innerText =
+            `Total: ₹${total.toFixed(2)}`;
+
+    }
+
+
+    document
+        .getElementById("checkout-form")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+
+            // Check whether user is logged in
+
+            const user =
+                JSON.parse(
+                    localStorage.getItem("user")
+                );
+
+            if (!user) {
+
+                alert(
+                    "Please login before placing an order."
+                );
+
+                window.location.href =
+                    "login.html";
+
+                return;
+
+            }
+
+
+            // Get cart
 
             const cart = getCart();
-
-            const summary =
-                document.getElementById("order-summary");
-
-            const totalElement =
-                document.getElementById("order-total");
-
-            summary.innerHTML = "";
-
-            let total = 0;
 
 
             if (cart.length === 0) {
 
-                summary.innerHTML =
-                    "<p>Your cart is empty.</p>";
-
-                totalElement.innerText =
-                    "Total: ₹0.00";
+                alert(
+                    "Your cart is empty!"
+                );
 
                 return;
+
             }
 
 
-            cart.forEach(product => {
+            // Get customer details
 
-                const itemTotal =
+            const customerName =
+                document.getElementById("name").value;
+
+            const email =
+                document.getElementById("email").value;
+
+            const phone =
+                document.getElementById("phone").value;
+
+            const address =
+                document.getElementById("address").value;
+
+
+            // Calculate total
+
+            const total = cart.reduce(
+                (sum, product) =>
+                    sum +
                     Number(product.price) *
-                    product.quantity;
-
-                total += itemTotal;
-
-
-                const item =
-                    document.createElement("div");
-
-                item.className = "order-item";
-
-                item.innerHTML = `
-
-                    <div>
-
-                        <div class="order-item-name">
-                            ${product.name}
-                        </div>
-
-                        <div>
-                            Quantity: ${product.quantity}
-                        </div>
-
-                    </div>
-
-                    <div>
-                        ₹${itemTotal.toFixed(2)}
-                    </div>
-
-                `;
-
-                summary.appendChild(item);
-
-            });
-
-
-            totalElement.innerText =
-                `Total: ₹${total.toFixed(2)}`;
-
-        }
-
-
-document
-    .getElementById("checkout-form")
-    .addEventListener("submit", async function(event) {
-
-        event.preventDefault();
-
-        const cart = getCart();
-
-        if (cart.length === 0) {
-            alert("Your cart is empty!");
-            return;
-        }
-
-        const customerName =
-            document.getElementById("name").value;
-
-        const email =
-            document.getElementById("email").value;
-
-        const phone =
-            document.getElementById("phone").value;
-
-        const address =
-            document.getElementById("address").value;
-
-        const total = cart.reduce(
-            (sum, product) =>
-                sum + Number(product.price) * product.quantity,
-            0
-        );
-
-        const orderData = {
-            customer_name: customerName,
-            email: email,
-            phone: phone,
-            address: address,
-            total_amount: total,
-            items: cart
-        };
-
-        try {
-
-            const response = await fetch(
-                "http://localhost:5000/api/orders",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify(orderData)
-                }
+                    product.quantity,
+                0
             );
 
-            const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(
-                    result.message || "Failed to place order"
+            // Prepare order data
+
+            const orderData = {
+
+                customer_name:
+                    customerName,
+
+                email:
+                    email,
+
+                phone:
+                    phone,
+
+                address:
+                    address,
+
+                total_amount:
+                    total,
+
+                items:
+                    cart
+
+            };
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "http://localhost:5000/api/orders",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    orderData
+                                )
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.message ||
+                        "Failed to place order"
+                    );
+
+                }
+
+
+                // Order successfully created
+
+                alert(
+                    `Order placed successfully!\nOrder ID: ${result.orderId}`
                 );
+
+
+                // Clear cart
+
+                localStorage.removeItem(
+                    "cart"
+                );
+
+
+                // Go to home page
+
+                window.location.href =
+                    "index.html";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Checkout error:",
+                    error
+                );
+
+                alert(
+                    "Failed to place order. Please try again."
+                );
+
             }
 
-            alert(
-                `Order placed successfully!\nOrder ID: ${result.orderId}`
-            );
-
-            localStorage.removeItem("cart");
-
-            window.location.href = "index.html";
-
-        } catch (error) {
-
-            console.error("Checkout error:", error);
-
-            alert(
-                "Failed to place order. Please try again."
-            );
-
-        }
-
-    });
+        });
 
 
+    // Display order summary when page loads
 
-        displayOrderSummary();
+    displayOrderSummary();
 
-    </script>
+</script>
+
 
 </body>
 </html>
