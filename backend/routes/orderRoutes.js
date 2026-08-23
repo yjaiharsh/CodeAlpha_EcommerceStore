@@ -4,7 +4,8 @@ const express = require("express");
 const {
     placeOrder,
     getMyOrders,
-    getAllOrdersController
+    getAllOrdersController,
+    updateOrderStatusController
 } = require("../controllers/orderController");
 
 const router = express.Router();
@@ -17,6 +18,12 @@ router.get(
     "/all",
     adminOnly,
     getAllOrdersController
+);
+
+router.put(
+    "/status",
+    adminOnly,
+    updateOrderStatusController
 );
 
 module.exports = router;

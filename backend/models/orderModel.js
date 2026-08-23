@@ -128,9 +128,25 @@ async function getAllOrders() {
 
     return orders;
 }
+
+async function updateOrderStatus(orderId, status) {
+
+    const [result] = await db.query(
+        `UPDATE orders
+         SET status = ?
+         WHERE id = ?`,
+        [
+            status,
+            orderId
+        ]
+    );
+
+    return result;
+}
+
 module.exports = {
     createOrder,
     getOrdersByEmail,
-    getAllOrders
+    getAllOrders,
+    updateOrderStatus
 };
-

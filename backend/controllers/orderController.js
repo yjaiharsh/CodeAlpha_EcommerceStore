@@ -1,8 +1,8 @@
-
 const {
     createOrder,
     getOrdersByEmail,
-    getAllOrders
+    getAllOrders,
+    updateOrderStatus
 } = require("../models/orderModel");
 
 
@@ -150,9 +150,98 @@ async function getAllOrdersController(req, res) {
     }
 }
 
+async function updateOrderStatusController(req, res) {
+
+    try {
+
+        const {
+            orderId,
+            status
+        } = req.body;
+
+
+        const allowedStatuses = [
+            "Placed",
+            "Processing",
+            "Shipped",
+            "Delivered"
+        ];
+
+
+        if (!orderId || !status) {
+
+            return res.status(400).json({
+                message:
+                    "Order ID and status are required."
+            });
+
+        }
+
+
+        if (!allowedStatuses.includes(status)) {
+
+            return res.status(400).json({
+                message:
+                    "Invalid order status."
+            });
+
+        }
+
+
+        const result =
+            await updateOrderStatus(
+                orderId,
+                status
+            );
+
+
+        if (result.affectedRows === 0) {
+
+            return res.status(404).json({
+                message:
+                    "Order not found."
+            });
+
+        }
+
+
+        res.status(200).json({
+
+            message:
+                "Order status updated successfully.",
+
+            orderId:
+                orderId,
+
+            status:
+                status
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Update order status error:",
+            error
+        );
+
+
+        res.status(500).json({
+
+            message:
+                "Failed to update order status."
+
+        });
+
+    }
+
+}
+
 module.exports = {
     placeOrder,
     getMyOrders,
-    getAllOrdersController
+    getAllOrdersController,
+    updateOrderStatusController
 };
 

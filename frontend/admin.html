@@ -205,7 +205,46 @@
             font-size: 13px;
 
         }
+        
+         .status-select {
 
+    padding: 7px 10px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 5px;
+
+    background: white;
+
+    cursor: pointer;
+
+}
+
+
+.update-status-button {
+
+    margin-left: 6px;
+
+    padding: 7px 12px;
+
+    border: none;
+
+    border-radius: 5px;
+
+    background-color: #222;
+
+    color: white;
+
+    cursor: pointer;
+
+}
+
+
+.update-status-button:hover {
+
+    opacity: 0.85;
+
+}
         .customer-details {
 
             display: grid;
@@ -773,11 +812,39 @@
                             Order #${order.id}
                         </div>
 
-                        <div
-                            class="status"
-                        >
-                            ${order.status}
-                        </div>
+ <div>
+    <select
+        id="status-${order.id}"
+        class="status-select"
+    >
+        <option value="Placed"
+            ${order.status === "Placed" ? "selected" : ""}>
+            Placed
+        </option>
+
+        <option value="Processing"
+            ${order.status === "Processing" ? "selected" : ""}>
+            Processing
+        </option>
+
+        <option value="Shipped"
+            ${order.status === "Shipped" ? "selected" : ""}>
+            Shipped
+        </option>
+
+        <option value="Delivered"
+            ${order.status === "Delivered" ? "selected" : ""}>
+            Delivered
+        </option>
+    </select>
+
+    <button
+        onclick="updateOrderStatus(${order.id})"
+        class="update-status-button"
+    >
+        Update
+    </button>
+</div>
 
                     </div>
 
@@ -912,7 +979,82 @@
         }
 
     }
+     
+    async function updateOrderStatus(orderId) {
 
+    const user =
+        JSON.parse(
+            localStorage.getItem("user")
+        );
+
+    const statusSelect =
+        document.getElementById(
+            `status-${orderId}`
+        );
+
+    const status =
+        statusSelect.value;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "http://localhost:5000/api/orders/status",
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "x-user-role":
+                            user.role
+                    },
+
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        status: status
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                "Failed to update order status."
+            );
+
+        }
+
+
+        alert(
+            `Order #${orderId} status updated to ${status}.`
+        );
+
+        loadAdminOrders();
+
+
+    } catch (error) {
+
+        console.error(
+            "Update status error:",
+            error
+        );
+
+        alert(
+            "Failed to update order status."
+        );
+
+    }
+
+}
 
     loadAdminOrders();
 
