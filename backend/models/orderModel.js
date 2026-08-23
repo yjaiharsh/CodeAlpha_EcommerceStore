@@ -103,9 +103,34 @@ async function getOrdersByEmail(email) {
     return orders;
 }
 
+async function getAllOrders() {
 
+    const [orders] = await db.query(
+        `SELECT
+            o.id,
+            o.customer_name,
+            o.email,
+            o.phone,
+            o.address,
+            o.total_amount,
+            o.status,
+            o.created_at,
+            oi.product_id,
+            oi.product_name,
+            oi.price,
+            oi.quantity,
+            oi.subtotal
+         FROM orders o
+         LEFT JOIN order_items oi
+         ON o.id = oi.order_id
+         ORDER BY o.created_at DESC, oi.id ASC`
+    );
+
+    return orders;
+}
 module.exports = {
     createOrder,
-    getOrdersByEmail
+    getOrdersByEmail,
+    getAllOrders
 };
 

@@ -133,6 +133,13 @@
                  My Orders
             </a>
 
+            <a
+                href="admin.html"
+                id="admin-link"
+                style="display: none;"
+             >
+                 Admin Dashboard
+            </a>
             <button onclick="logout()">
                 Logout
             </button>
@@ -166,48 +173,56 @@
     </main>
 
 
+
     <script>
 
-        // Check whether the user is logged in
-
-        const user =
-            JSON.parse(
-                localStorage.getItem("user")
-            );
+    // Get logged-in user
+    const user = JSON.parse(
+        localStorage.getItem("user")
+    );
 
 
-        if (!user) {
+    // Check whether the user is logged in
+    if (!user) {
 
-            window.location.href =
-                "login.html";
+        window.location.href =
+            "login.html";
 
-        }
-
-
-        // Display user's name
-
-        if (user) {
-
-            document.getElementById(
-                "welcome-message"
-            ).innerText =
-                `Welcome, ${user.name}!`;
-
-        }
+    }
 
 
-        // Logout function
+    // Display user's name
+    if (user) {
 
-        function logout() {
+        document.getElementById(
+            "welcome-message"
+        ).innerText =
+            `Welcome, ${user.name}!`;
 
-            localStorage.removeItem("user");
+    }
 
-            window.location.href =
-                "login.html";
 
-        }
+    // Show Admin Dashboard only for admin
+    if (user && user.role === "admin") {
 
-    </script>
+        document.getElementById(
+            "admin-link"
+        ).style.display = "inline";
+
+    }
+
+
+    // Logout function
+    function logout() {
+
+        localStorage.removeItem("user");
+
+        window.location.href =
+            "login.html";
+
+    }
+
+</script>
 
 </body>
 

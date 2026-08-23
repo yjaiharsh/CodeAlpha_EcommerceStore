@@ -1,7 +1,8 @@
 
 const {
     createOrder,
-    getOrdersByEmail
+    getOrdersByEmail,
+    getAllOrders
 } = require("../models/orderModel");
 
 
@@ -128,11 +129,30 @@ async function getMyOrders(req, res) {
 
 }
 
+async function getAllOrdersController(req, res) {
+
+    try {
+
+        const orders = await getAllOrders();
+
+        res.status(200).json({
+            orders: orders
+        });
+
+    } catch (error) {
+
+        console.error("Get all orders error:", error);
+
+        res.status(500).json({
+            message: "Failed to fetch orders."
+        });
+
+    }
+}
 
 module.exports = {
-
     placeOrder,
-    getMyOrders
-
+    getMyOrders,
+    getAllOrdersController
 };
 

@@ -1,23 +1,22 @@
+const adminOnly = require("../middleware/adminMiddleware");
 const express = require("express");
 
 const {
     placeOrder,
-    getMyOrders
+    getMyOrders,
+    getAllOrdersController
 } = require("../controllers/orderController");
 
 const router = express.Router();
 
+router.post("/", placeOrder);
 
-router.post(
-    "/",
-    placeOrder
-);
-
+router.get("/", getMyOrders);
 
 router.get(
-    "/",
-    getMyOrders
+    "/all",
+    adminOnly,
+    getAllOrdersController
 );
-
 
 module.exports = router;
