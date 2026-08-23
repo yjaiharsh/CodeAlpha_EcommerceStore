@@ -111,13 +111,14 @@ if (!passwordMatch) {
         }
 
         res.status(200).json({
-            message: "Login successful",
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email
-            }
-        });
+        message: "Login successful",
+        user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+    }
+});
 
     } catch (error) {
 
