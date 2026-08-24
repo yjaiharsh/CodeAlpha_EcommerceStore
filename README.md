@@ -11,7 +11,7 @@ The application provides customer shopping functionality along with an admin das
 * User registration and login
 * Secure password hashing using bcrypt
 * Customer role-based access
-* Browse available products
+* Browse products
 * View individual product details
 * Add products to cart
 * Update cart quantities
@@ -23,8 +23,8 @@ The application provides customer shopping functionality along with an admin das
 
 ### Admin Features
 
-* Separate admin account and role
-* Admin-only dashboard
+* Admin role and authentication
+* Admin dashboard
 * View all customer orders
 * View order details
 * Update order status
@@ -63,45 +63,32 @@ The application provides customer shopping functionality along with an admin das
 
 ## Project Structure
 
-
+```text
 CodeAlpha_EcommerceStore/
 │
 ├── backend/
-│   ├── config/### Products
-
-GET    /api/products
-GET    /api/products/:id
-
-Admin only:
-POST   /api/products
-PUT    /api/products/:id
-DELETE /api/products/:id
+│   ├── config/
 │   │   └── db.js
-│   │
 │   ├── controllers/
 │   │   ├── authController.js
 │   │   ├── cartController.js
 │   │   ├── orderController.js
 │   │   ├── productController.js
 │   │   └── userController.js
-│   │
 │   ├── middleware/
 │   │   ├── adminMiddleware.js
 │   │   └── authMiddleware.js
-│   │
 │   ├── models/
 │   │   ├── cartModel.js
 │   │   ├── orderModel.js
 │   │   ├── productModel.js
 │   │   └── userModel.js
-│   │
 │   ├── routes/
 │   │   ├── authRoutes.js
 │   │   ├── cartRoutes.js
 │   │   ├── orderRoutes.js
 │   │   ├── productRoutes.js
 │   │   └── userRoutes.js
-│   │
 │   ├── server.js
 │   ├── package.json
 │   └── package-lock.json
@@ -113,6 +100,9 @@ DELETE /api/products/:id
 │
 ├── frontend/
 │   ├── images/
+│   │   ├── headphones.jpg
+│   │   ├── running-shoes.jpg
+│   │   └── smartwatch.jpg
 │   ├── admin.html
 │   ├── cart.html
 │   ├── checkout.html
@@ -125,7 +115,7 @@ DELETE /api/products/:id
 │
 ├── .gitignore
 └── README.md
-
+```
 
 ## Database
 
@@ -136,129 +126,183 @@ The application uses MySQL with the following main tables:
 * `orders`
 * `order_items`
 
-The `users` table stores customer and admin accounts.
+### Users
 
-The `products` table stores product information such as name, description, price, category, image and stock.
+Stores customer and administrator account information, including user roles.
 
-The `orders` table stores customer order information and order status.
+### Products
 
-The `order_items` table stores the individual products associated with each order.
+Stores product information such as:
+
+* Product name
+* Description
+* Price
+* Category
+* Image
+* Stock
+
+### Orders
+
+Stores customer order information including:
+
+* Customer details
+* Total amount
+* Order status
+* Order creation date
+
+### Order Items
+
+Stores the individual products associated with each order.
 
 ## Authentication and Security
 
-User passwords are stored using **bcrypt password hashing** rather than plain text passwords.
+* Passwords are securely hashed using **bcrypt**.
+* User roles distinguish between customers and administrators.
+* Administrative APIs are protected using admin middleware.
+* Customers cannot access admin-only operations.
+* Unauthenticated users are redirected to the login page when accessing protected frontend pages.
+* Environment variables are stored in `.env` and excluded from Git using `.gitignore`.
+* `node_modules` is excluded from the repository.
 
-The application also implements role-based access control.
+### Admin-only Operations
 
-Customers can access shopping and order-related functionality, while administrative operations are protected using an admin middleware.
+The following operations require administrator access:
 
-Admin-only operations include:
-
-* Viewing all orders
-* Updating order status
-* Creating products
-* Updating products
-* Deleting products
-
-Unauthenticated users are redirected to the login page when attempting to access protected frontend pages.
+* View all orders
+* Update order status
+* Create products
+* Update products
+* Delete products
 
 ## API Overview
 
 ### Authentication
 
-
+```text
 POST /api/auth/register
 POST /api/auth/login
+```
 
 ### Products
 
-GET    /api/products
-GET    /api/products/:id
+Public endpoints:
 
-Admin only:
+```text
+GET /api/products
+GET /api/products/:id
+```
+
+Admin-only endpoints:
+
+```text
 POST   /api/products
 PUT    /api/products/:id
 DELETE /api/products/:id
+```
 
 ### Orders
 
+Customer endpoint:
 
+```text
 POST /api/orders
 GET  /api/orders
-GET  /api/orders/all
-PUT  /api/orders/status
+```
 
+Admin-only endpoints:
+
+```text
+GET /api/orders/all
+PUT /api/orders/status
+```
 
 ### Cart
 
-
+```text
 GET    /api/cart
 POST   /api/cart
 PUT    /api/cart/:id
 DELETE /api/cart/:id
-
+```
 
 ## Running the Project Locally
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
-
-git clone <your-github-repository-url>
+```bash
+git clone https://github.com/yjaiharsh/CodeAlpha_EcommerceStore.git
 cd CodeAlpha_EcommerceStore
+```
 
+### 2. Install Backend Dependencies
 
-### 2. Install backend dependencies
-
-
+```bash
 cd backend
 npm install
+```
 
-
-### 3. Configure environment variables
+### 3. Configure Environment Variables
 
 Create a `.env` file inside the `backend` directory.
 
-Add your local MySQL configuration:
+Example:
 
-
+```text
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_NAME=ecommerce_db
+DB_PORT=3306
+```
 
+**Do not upload the `.env` file to GitHub.**
 
-Do not upload the `.env` file to GitHub.
+### 4. Set Up the Database
 
-### 4. Create the database
+Create the database:
 
-Create the `ecommerce_db` database in MySQL and execute the SQL files from the `database` directory.
+```sql
+CREATE DATABASE ecommerce_db;
+```
 
-### 5. Start the backend
+Then select it:
 
+```sql
+USE ecommerce_db;
+```
 
-cd backend
+Execute the SQL files from the `database` directory to create and populate the required tables.
+
+### 5. Start the Backend
+
+From the `backend` directory:
+
+```bash
 npm start
-
+```
 
 The backend runs on:
 
-
+```text
 http://localhost:5000
+```
 
+### 6. Run the Frontend
 
-### 6. Open the frontend
+Use a local development server such as the **VS Code Live Server** extension.
 
-Use a local development server such as the VS Code Live Server extension and open:
+Open:
 
-
+```text
 frontend/index.html
-
+```
 
 ## Testing
 
 The application was tested for:
 
-* User registration and login
+* User registration
+* User login
 * Password hashing
 * Customer/admin role handling
 * Product listing
@@ -275,6 +319,7 @@ The application was tested for:
 * Customer access restrictions
 * Logged-out page protection
 * Database integrity
+* Admin API protection
 
 ## Future Improvements
 
@@ -288,8 +333,8 @@ Possible future enhancements include:
 * Inventory management
 * Responsive mobile UI improvements
 * Image upload functionality
-* Order cancellation for customers
-* Deployment to a cloud platform
+* Customer order cancellation
+* Cloud deployment
 
 ## Author
 
